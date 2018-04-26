@@ -2,7 +2,7 @@
 
 typedef sturct gap_buffer {
 
-  int max;
+  int total;
   char* buffer;
   int gap_start;
   int gap_end;
