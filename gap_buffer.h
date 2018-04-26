@@ -1,3 +1,9 @@
+/*
+  Read about gap buffer from the following assignment:
+  https://www.cs.cmu.edu/~fp/courses/15122-f12/assignments/15-122-prog4-2.pdf
+ */
+
+
 #include <stdbool.h>
 
 typedef struct gap_buffer {
