@@ -1,11 +1,11 @@
 #include <stdbool.h>
 
-typedef sturct gap_buffer {
+typedef struct gap_buffer {
 
   int total;
   char* buffer;
-  int gap_start;
-  int gap_end;
+  int start;
+  int end;
   
 } my_gap_buff;
 
@@ -27,7 +27,7 @@ bool is_at_right_end(my_gap_buff* gap_buff);
 
 
 // creates a new gap buffer with max = size
-my_gap_buff gap_buff_init(my_gap_buff* gap_buff, int size);
+void gap_buff_init(my_gap_buff* gap_buff, int size);
 
 // moves the gap to the right (forward)
 void gap_buff_forward(my_gap_buff* gap_buff);
