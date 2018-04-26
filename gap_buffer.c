@@ -93,6 +93,19 @@ void gap_buff_delete(my_gap_buff* gap_buff){
     (gap_buff->start)--;
         
   }
+}
 
-  
+
+void print_buff(my_gap_buff* gap_buff){
+  int length = gap_buff->total;
+  for(int i = 0; i < length; i++) {
+    printf("%c\n", gap_buff->buffer[i]);
+  }
+}
+
+
+int main () {
+
+   
+  return 0;
 }
