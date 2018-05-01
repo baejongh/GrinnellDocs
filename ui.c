@@ -62,7 +62,7 @@ void write_message(char c) {
     }
     else {
      // display message
-    mvwaddstr(mainwin, y, x, &c);
+    mvwaddch(mainwin, y, x, c);
     wrefresh(mainwin);
     // increment x and y
     x++;
@@ -171,6 +171,7 @@ void user_actions(int n) {
             {
                 // Put the rest of the line on a new line
                 y++;
+                x = 0;
             }
             else
             {
@@ -191,7 +192,6 @@ void user_actions(int n) {
         default:
             // Any other character
             write_message((char) n);
-            x++;
             move(y,x);
 
             break;
@@ -207,7 +207,6 @@ int main(int argc, char* argv[])
     {
         fn = argv[1];               // Set the filename
     
-
       // initialize the ui
      ui_init();
 
@@ -231,7 +230,6 @@ int main(int argc, char* argv[])
       int input = getch();
       user_actions(input);
     }
-
 
     refresh();                      // Refresh display
     endwin();                       // End ncurses mode
