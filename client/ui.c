@@ -1,4 +1,4 @@
-#include "ui.h"
+#include "/Users/jonghoonbae/Documents/spring_2017/CSC-213/GrinnellDocs/client/ui.h"
 
 #include <curses.h>
 #include <stdio.h>
@@ -18,7 +18,7 @@ WINDOW* inputwin;
 int x, y;
 char mode;
 
-char* messages[CHAT_HEIGHT];
+char* messages[WIDTH];
 size_t text_lenght = 0;
 
 
@@ -31,7 +31,7 @@ void ui_init() {
   }
   
   // initialize mode, x, y
-  mode = 'n'
+  mode = 'n';
   x=0;
   y=0;
 
@@ -57,10 +57,10 @@ void write_message(char* c) {
   mvwaddstr(textwin, y, x, c);
   wrefresh(textwin);
   // increment x and y
-  x++;
-  if (x == 99) {
+  x = x + strlen(c) ;
+  if (x >= 99) {
     y++;
-    x = 0;
+    x = x % 100;
   }
   
 }
@@ -97,7 +97,7 @@ void user_actions(int n) {
     switch(mode)
     {
     case 'n':
-        switch(c)
+        switch(n)
         {
         case 'x':
             // Press 'x' to exit
@@ -113,7 +113,7 @@ void user_actions(int n) {
         }
         break;
     case 'i':
-        switch(c)
+        switch(n)
         {
         case 27:
             // The Escape/Alt key
@@ -172,12 +172,12 @@ void user_actions(int n) {
         case KEY_CATAB:
         case 9:
             // The Tab key
-            write_message("  ")
+            write_message("  ");
             x;
             break;
         default:
             // Any other character
-            write_message(c);
+            write_message(n);
             x++;
             break;
         }
@@ -187,7 +187,7 @@ void user_actions(int n) {
 
 int main(int argc, char* argv[])
 {
-    string fn = "";
+    char* fn = "";
     if(argc > 1)
     {
         fn = argv[1];               // Set the filename
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
     ui_init();
 
     // read in the file
-    File *file;
+    FILE *file;
     char buffer[1024];
     size_t c;
     file = fopen(fn, "r");
@@ -208,14 +208,12 @@ int main(int argc, char* argv[])
       }
       write_message(c);
     }
-    fclose(fp);
+    fclose(file);
 
     while(1) {
       int input = getch();
-
+      user_actions(input);
     }
-
-
 
 
     refresh();                      // Refresh display
