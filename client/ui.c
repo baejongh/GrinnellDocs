@@ -18,7 +18,7 @@ WINDOW* inputwin;
 int x, y;
 char mode;
 
-char* messages[WIDTH];
+char* messages[TEXT_HEIGHT];
 size_t text_lenght = 0;
 
 
@@ -52,12 +52,12 @@ void ui_init() {
   
 }
 
-void write_message(char* c) {
+void write_message(char c) {
   // display message
-  mvwaddstr(textwin, y, x, c);
+  mvwaddstr(textwin, y, x, &c);
   wrefresh(textwin);
   // increment x and y
-  x = x + strlen(c) ;
+  x++;
   if (x >= 99) {
     y++;
     x = x % 100;
@@ -66,7 +66,6 @@ void write_message(char* c) {
 }
 
 void user_actions(int n) {
-
 
     switch(n) {
     case KEY_LEFT:
@@ -131,9 +130,9 @@ void user_actions(int n) {
             else
             {
                 // Removes a character
-                write_message("");
+                mvwaddch(textwin, y, x, ' ');
                 // sets the curser at the correct location
-                x = x - 2;
+                x = x - 1;
                 move(y,x);
             }
             break;
@@ -146,7 +145,8 @@ void user_actions(int n) {
             else
             {
                 // Removes a character
-                write_message("");
+                
+                mvwaddch(textwin, y, x, ' ');
                 x--;
                 move(y,x);
             }
@@ -172,8 +172,8 @@ void user_actions(int n) {
         case KEY_CATAB:
         case 9:
             // The Tab key
-            write_message("  ");
-            x;
+            write_message('\t');
+            x = x + 2;
             break;
         default:
             // Any other character
@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
     size_t c;
     file = fopen(fn, "r");
     while(1) {
-      c = fgetc(file);
+      char c = fgetc(file);
       if (feof(file)) {
         break;
       }
