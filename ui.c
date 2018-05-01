@@ -19,10 +19,8 @@ int x, y;
 char mode;
 
 char* messages[TEXT_HEIGHT];
-size_t text_lenght = 0;
 
-
-void ui_init() {
+void setup_window() {
   // Create the main window
   mainwin = initscr();
   if(mainwin == NULL) {
@@ -32,8 +30,8 @@ void ui_init() {
   
   // initialize mode, x, y
   mode = 'n';
-  x=0;
-  y=0;
+  x = 0;
+  y = 0;
 
   // Don't display characters when they're pressed
   noecho();
@@ -44,13 +42,8 @@ void ui_init() {
   cbreak();
   // get keys like backspace, delete and four arrow keys by getch()
   keypad(stdscr,TRUE);
-  
-  // Create the text editor window
-  //textwin = subwin(mainwin, TEXT_HEIGHT + 2, WIDTH + 2, 0, 0);
- // box(textwin, 0, 0);
 
   refresh();
-  
 }
 
 void write_message(char c) {
@@ -61,17 +54,16 @@ void write_message(char c) {
         move(y,x);
     }
     else {
-     // display message
-    mvwaddch(mainwin, y, x, c);
-    wrefresh(mainwin);
-    // increment x and y
-    x++;
-    if (x >= 99) {
-        y++;
-        x = 0;
+        // display message
+        mvwaddch(mainwin, y, x, c);
+        wrefresh(mainwin);
+        // increment x and y
+        x++;
+        if (x > WIDTH) {
+            y++;
+            x = 0;
+        }
     }
-    }
-  
 }
 
 void user_actions(int n) {
@@ -84,7 +76,7 @@ void user_actions(int n) {
         }
         return;
     case KEY_RIGHT:
-        if (x + 1 <= 99) {
+        if (x + 1 < WIDTH) {
           x++;
           move(y,x);
         }
@@ -96,7 +88,7 @@ void user_actions(int n) {
         }
         return;
     case KEY_DOWN:
-        if (y + 1 <= 99) {
+        if (y + 1 < TEXT_HEIGHT) {
           y++;
           move(y,x);
         }
@@ -200,38 +192,41 @@ void user_actions(int n) {
     }
 }
 
-int main(int argc, char* argv[])
+int ui_init(char* filename)
 {
-    char* fn = "";
-    if(argc > 1)
-    {
-        fn = argv[1];               // Set the filename
-    
-      // initialize the ui
-     ui_init();
+    if (filename == NULL) {
+        fprintf(stderr, "A valid filename is required: current filename is NULL");
+    }          
 
-     // read in the file
-     FILE *file;
-    char buffer[1024];
-    size_t c;
-    file = fopen(fn, "r");
-    while(1) {
-      int c = fgetc(file);
-      if (feof(file) || c == EOF) {
-        break;
-      }
-      write_message(c);
-    }
-    fclose(file);
+    // Initialize UI window
+    setup_window();
+    write_file_to_ui(filename);
 
-    }
-
+    // UI user input loop
     while(1) {
       int input = getch();
       user_actions(input);
     }
 
-    refresh();                      // Refresh display
-    endwin();                       // End ncurses mode
+    refresh(); // Refresh display
+    endwin();  // End ncurses mode
     return 0;
+}
+
+void write_file_to_ui(char* filename) {
+    // read in the file
+    FILE *file;
+    size_t c;
+
+    file = fopen(filename, "r");
+
+    while(1) {
+        int c = fgetc(file);
+        if (feof(file) || c == EOF) {
+            break;
+        }
+        write_message(c);
+    }
+
+    fclose(file);
 }

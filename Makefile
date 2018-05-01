@@ -19,4 +19,4 @@ gap_buffer: gap_buffer.c gap_buffer.h
 	$(CC) $(CFLAGS) -o gap_buffer gap_buffer.c
 
 ui: ui.c ui.h
-	$(CC) $(CFLAGS) -o ui ui.c -lncurses
+	$(CC) $(CFLAGS) -o ui ui.c client.c -lncurses
