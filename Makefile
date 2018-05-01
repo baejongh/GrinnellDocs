@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -g
+CFLAGS = -g -fsanitize=address
 
 all: server client ui gap_buffer
 

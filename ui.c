@@ -46,23 +46,31 @@ void ui_init() {
   keypad(stdscr,TRUE);
   
   // Create the text editor window
-  textwin = subwin(mainwin, TEXT_HEIGHT + 2, WIDTH + 2, 0, 0);
-  box(textwin, 0, 0);
+  //textwin = subwin(mainwin, TEXT_HEIGHT + 2, WIDTH + 2, 0, 0);
+ // box(textwin, 0, 0);
 
   refresh();
   
 }
 
 void write_message(char c) {
-  // display message
-  mvwaddstr(textwin, y, x, &c);
-  wrefresh(textwin);
-  // increment x and y
-  x++;
-  if (x >= 99) {
-    y++;
-    x = 0;
-  }
+
+    if (c == '\n') {
+        y++;
+        x = 0;
+        move(y,x);
+    }
+    else {
+     // display message
+    mvwaddstr(mainwin, y, x, &c);
+    wrefresh(mainwin);
+    // increment x and y
+    x++;
+    if (x >= 99) {
+        y++;
+        x = 0;
+    }
+    }
   
 }
 
@@ -131,11 +139,11 @@ void user_actions(int n) {
             else
             {
                 // Removes a character
-                mvwaddch(textwin, y, x, ' ');
+                mvwaddch(mainwin, y, x, ' ');
                 // sets the curser at the correct location
                 x = x - 1;
                 move(y,x);
-                wrefresh(textwin);
+                wrefresh(mainwin);
 
             }
             break;
@@ -149,7 +157,7 @@ void user_actions(int n) {
             {
                 // Removes a character
                 
-                mvwaddch(textwin, y, x, ' ');
+                mvwaddch(mainwin, y, x, ' ');
                 x--;
                 move(y,x);
 
@@ -185,6 +193,7 @@ void user_actions(int n) {
             write_message((char) n);
             x++;
             move(y,x);
+
             break;
         }
         break;
@@ -209,7 +218,7 @@ int main(int argc, char* argv[])
     file = fopen(fn, "r");
     while(1) {
       int c = fgetc(file);
-      if (feof(file)) {
+      if (feof(file) || c == EOF) {
         break;
       }
       write_message(c);
