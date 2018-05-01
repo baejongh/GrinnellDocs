@@ -1,4 +1,4 @@
-#include "/Users/jonghoonbae/Documents/spring_2017/CSC-213/GrinnellDocs/client/ui.h"
+#include "ui.h"
 
 #include <curses.h>
 #include <stdio.h>
