@@ -48,7 +48,8 @@ void ui_init() {
   // Create the text editor window
   textwin = subwin(mainwin, TEXT_HEIGHT + 2, WIDTH + 2, 0, 0);
   box(textwin, 0, 0);
-  
+
+  refresh();
   
 }
 
@@ -60,7 +61,7 @@ void write_message(char c) {
   x++;
   if (x >= 99) {
     y++;
-    x = x % 100;
+    x = 0;
   }
   
 }
@@ -134,6 +135,8 @@ void user_actions(int n) {
                 // sets the curser at the correct location
                 x = x - 1;
                 move(y,x);
+                wrefresh(textwin);
+
             }
             break;
         case KEY_DC:
@@ -149,6 +152,8 @@ void user_actions(int n) {
                 mvwaddch(textwin, y, x, ' ');
                 x--;
                 move(y,x);
+                wrefresh(textwin);
+
             }
             break;
         case KEY_ENTER:
@@ -191,24 +196,26 @@ int main(int argc, char* argv[])
     if(argc > 1)
     {
         fn = argv[1];               // Set the filename
-    }
+    
 
-    // initialize the ui
-    ui_init();
+      // initialize the ui
+     ui_init();
 
-    // read in the file
-    FILE *file;
+     // read in the file
+     FILE *file;
     char buffer[1024];
     size_t c;
     file = fopen(fn, "r");
     while(1) {
-      char c = fgetc(file);
+      int c = fgetc(file);
       if (feof(file)) {
         break;
       }
       write_message(c);
     }
     fclose(file);
+
+    }
 
     while(1) {
       int input = getch();
