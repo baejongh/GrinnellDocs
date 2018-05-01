@@ -152,7 +152,6 @@ void user_actions(int n) {
                 mvwaddch(textwin, y, x, ' ');
                 x--;
                 move(y,x);
-                wrefresh(textwin);
 
             }
             break;
@@ -179,11 +178,13 @@ void user_actions(int n) {
             // The Tab key
             write_message('\t');
             x = x + 2;
+            move(y,x);
             break;
         default:
             // Any other character
-            write_message(n);
+            write_message((char) n);
             x++;
+            move(y,x);
             break;
         }
         break;
