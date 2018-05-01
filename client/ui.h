@@ -9,7 +9,7 @@ void ui_init();
 /**
  * 
  */
-void write_message(char* c);
+void write_message(char c);
 
 /**
  * 
