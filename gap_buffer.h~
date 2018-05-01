@@ -1,9 +1,0 @@
-
-typedef sturct gap_buffer {
-
-  int max;
-  char* buffer;
-  int gap_start;
-  int gap_end;
-  
-} gap_buf;
