@@ -13,27 +13,30 @@
 #include <unistd.h>
 
 #include "types.h"
-
-void server_loop();
-void* ui_fn(void* p);
-void init_server_streams();
-server_pl_t* send_recieve_msg(client_pl_t* pl);
-void send_server_payload(client_pl_t* pl);
+#include "ui.h"
+#include "client.h"
 
 server_info_t server_info;
+bool active = true;
 
 int main(int argc, char** argv) {
-  if(argc != 3) {
-    fprintf(stderr, "Usage: %s <server address> <port>\n", argv[0]);
+  if(argc != 4) {
+    fprintf(stderr, "Usage: %s <server address> <port> <filename>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
   server_info.addr = argv[1];
   server_info.port = atoi(argv[2]);
+  server_info.output = NULL;
+  server_info.input = NULL;
 
   // Create a thread for UI
+  ui_fn_args_t* ui_args = (ui_fn_args_t*) malloc(sizeof(ui_fn_args_t));
+
+  strcpy(ui_args->filename, argv[3]);
+
   pthread_t ui_thread;
-  if (pthread_create(&ui_thread, NULL, ui_fn, NULL)) {
+  if (pthread_create(&ui_thread, NULL, ui_fn, ui_args)) {
     perror("pthread_create_failed");
     exit(EXIT_FAILURE);
   }
@@ -50,8 +53,11 @@ void server_loop() {
   init_server_streams();
 
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
+
   while (fread(reply, sizeof(server_pl_t), 1, server_info.input) > 0) {
-    printf("Client sent: %s\n", reply->msg);
+    if (reply->msg_type == SERVER_ECHO) {
+      printf("Client sent: %s\n", reply->msg);
+    }
   }
 
   free(reply);
@@ -101,17 +107,20 @@ void init_server_streams() {
 
   server_info.input  = input;
   server_info.output = output;
-
 }
 
 void* ui_fn(void* p) {
+  ui_fn_args_t* args = (ui_fn_args_t*) p;
+
+  ui_init(args->filename);
+
   client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
+  pl->msg_type = CLIENT_PING;
+  strcpy(pl->msg, "hello!\n");
 
   while (true) {
     // Get some input from the UI to send to the server
     // Or just general input to handle locally
-
-    strcpy(pl->msg, "Hello!\n");
     send_server_payload(pl);
 
     // Sleep for one second and then send hello again
@@ -128,4 +137,19 @@ void send_server_payload(client_pl_t* pl) {
     fwrite(pl, sizeof(client_pl_t), 1, server_info.output);
     fflush(server_info.output);
   }
+}
+
+void send_client_write_char_payload(int y_pos, int x_pos, char ch) {
+  // Fill in payload fields
+  client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
+  pl->msg_type = CLIENT_WRITE_CHAR;
+  pl->x_pos = x_pos;
+  pl->y_pos = y_pos;
+  pl->ch = ch;
+
+  // Send payload to server
+  send_server_payload(pl);
+
+  // Free memory for payload
+  free(pl);
 }

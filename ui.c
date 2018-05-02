@@ -47,7 +47,6 @@ void setup_window() {
 }
 
 void write_message(char c) {
-
     if (c == '\n') {
         y++;
         x = 0;
@@ -192,10 +191,10 @@ void user_actions(int n) {
     }
 }
 
-int ui_init(char* filename)
+void ui_init(char* filename)
 {
     if (filename == NULL) {
-        fprintf(stderr, "A valid filename is required: current filename is NULL");
+        fprintf(stderr, "A valid filename is required: current filename is: %s", filename);
     }          
 
     // Initialize UI window
@@ -210,7 +209,6 @@ int ui_init(char* filename)
 
     refresh(); // Refresh display
     endwin();  // End ncurses mode
-    return 0;
 }
 
 void write_file_to_ui(char* filename) {

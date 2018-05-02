@@ -113,12 +113,13 @@ void* client_thread_fn(void* p) {
   size_t linecap = 0;
   client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
+  reply->msg_type = SERVER_ECHO;
+  
   while(fread(pl, sizeof(client_pl_t), 1, input)) {
-      // Print a message on the server
-    printf("Client %d sent %s", client_number, pl->msg);
+    // Print a message on the server
+    printf("Client %d sent %s\n", client_number, pl->msg);
     
     // Send the message to the client. Flush the buffer so the message is actually sent.
-    
     fwrite(reply, sizeof(server_pl_t), 1, output);
     strcpy(reply->msg, pl->msg);
     fflush(output);

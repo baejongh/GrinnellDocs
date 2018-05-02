@@ -21,4 +21,6 @@ void user_actions(int n);
  */
 void write_file_to_ui(char* filename);
 
+void ui_init(char* filename);
+
 #endif
