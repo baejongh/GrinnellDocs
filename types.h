@@ -15,6 +15,7 @@
 #include <pthread.h>
 
 #define MAX_MSG_LEN 256
+#define MAX_FILENAME_LEN 32
 
 // Message types between server and client
 
@@ -62,6 +63,7 @@ typedef struct server_info {
 
 typedef struct client_pl {
   char msg[MAX_MSG_LEN];
+  char filename[MAX_FILENAME_LEN];
   int msg_type;
   int x_pos;
   int y_pos;

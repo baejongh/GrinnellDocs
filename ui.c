@@ -7,9 +7,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define WIDTH 100
-#define TEXT_HEIGHT 100
-#define USERNAME_DISPLAY_MAX 8
 
 char input[100];
 

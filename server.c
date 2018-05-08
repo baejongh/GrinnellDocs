@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 
 #include "types.h"
+#include "ui.h"
 
 #define DEFAULT_PORT 4444
 
@@ -133,4 +134,88 @@ void* client_thread_fn(void* p) {
   printf("Client %d disconnected.\n", client_number);
   
   return NULL;
+}
+
+// control flow for message types from client to the server
+void client_server_payload_handler(client_pl_t* pl) {
+
+  char client_msg[MAX_MSG_LEN] = pl->msg;
+  char filename[MAX_FILENAME_LEN] = pl->filename;
+  int msg_type = pl->msg_type;
+
+
+  switch (msg_type) {
+    case CLIENT_PING:
+
+      break;
+    case CLIENT_WRITE_CHAR:
+
+      break;
+    case CLIENT_DOC_REQUEST:
+      
+      break;
+      /*
+    case SERVER_DOC_END:
+      
+      break;
+    case SERVER_DOC_NOT_FOUND:
+      // We just write to an empty file
+      break;
+    case SERVER_WRITE_CHAR_RELAY:
+      // For now, just add to the end of the file.
+      // Later we can edit the location in the document that
+      // needs to be changed
+      ui_append_char(pl->ch);
+      break;*/
+    default:
+      perror("Unexpected message type server.c client_server_payload_handler");
+      break;
+  }
+}
+
+// compute the updated character offset from the ui x-y coordinates
+//    and moves the file pointer to the relevant position
+FILE* compute_offset(char* filename, int x, int y) {
+
+  FILE* file;
+  file = fopen(filename, "r+");
+  size_t ch;
+
+  int cur_x = 0;
+  int cur_y = 0;
+
+  while(!feof(file) || ch != EOF) {
+    
+    while (cur_y < y) {
+
+      ch = fgetc(file);
+
+      if(ch == '\n' || cur_x == WIDTH) {
+        cur_y ++;
+        cur_x = 0;
+      }
+      else {
+        cur_x ++;
+      }
+    }
+
+    while (cur_x < x) {
+      ch = fgetc(file);
+      cur_x++;
+    }
+  }
+
+  return file;
+}
+
+void server_file_update(char* filename, client_pl_t* pl) {
+  
+  FILE* file;
+  
+  int x_update = pl->x_pos;
+  int y_update = pl->y_pos;
+  file = compute_offset(filename, x_update, y_update);
+
+  
+
 }

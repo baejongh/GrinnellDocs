@@ -7,7 +7,6 @@
 
 // non-NULL, strictly positive max, appropriate start & end
 bool is_gap_buff(my_gap_buff* gap_buff){
-
   return true;
 }
 
