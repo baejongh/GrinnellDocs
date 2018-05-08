@@ -11,6 +11,8 @@
 #define TEXT_HEIGHT 100
 #define USERNAME_DISPLAY_MAX 8
 
+char input[100];
+
 WINDOW* mainwin;
 WINDOW* textwin;
 WINDOW* inputwin;
@@ -162,11 +164,16 @@ void user_actions(int n) {
         case 10:
             // The Enter key
             // Bring the rest of the line down
-            if(y < 100)
+            if(x < 100)
             {
-                // Put the rest of the line on a new line
+                for (int i = x; i < 100; i++) {
+                    char add = (char) mvwinch(mainwin, y, i);
+                   mvwaddch(mainwin, y+1, i, add);
+                   mvwaddch(mainwin, y, i, ' ');
+                }
                 y++;
-                x = 0;
+                // Put the rest of the line on a new line
+                move(y,x);
             }
             else
             {
