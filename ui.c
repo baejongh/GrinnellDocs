@@ -11,6 +11,8 @@
 #define TEXT_HEIGHT 100
 #define USERNAME_DISPLAY_MAX 8
 
+char input[100];
+
 WINDOW* mainwin;
 WINDOW* textwin;
 WINDOW* inputwin;
@@ -122,7 +124,7 @@ void user_actions(int n) {
         case 127:
         case KEY_BACKSPACE:
             // The Backspace key
-            if(x == 0)
+            if(x < 0)
             {
                 // do nothing
                 // need to move up the line
@@ -133,7 +135,11 @@ void user_actions(int n) {
                 // Removes a character
                 mvwaddch(mainwin, y, x, ' ');
                 // sets the curser at the correct location
-                x = x - 1;
+                if (x == 0) {
+                    x = 0;
+                } else {
+                    x = x - 1;
+                }
                 move(y,x);
                 wrefresh(mainwin);
             }
@@ -147,7 +153,6 @@ void user_actions(int n) {
             else
             {
                 // Removes a character
-                
                 mvwaddch(mainwin, y, x, ' ');
                 x--;
                 move(y,x);
@@ -158,11 +163,16 @@ void user_actions(int n) {
         case 10:
             // The Enter key
             // Bring the rest of the line down
-            if(y < 100)
+            if(x < 100)
             {
-                // Put the rest of the line on a new line
+                for (int i = x; i < 100; i++) {
+                    char add = (char) mvwinch(mainwin, y, i);
+                   mvwaddch(mainwin, y+1, i, add);
+                   mvwaddch(mainwin, y, i, ' ');
+                }
                 y++;
-                x = 0;
+                // Put the rest of the line on a new line
+                move(y,x);
             }
             else
             {
