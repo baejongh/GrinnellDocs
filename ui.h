@@ -25,4 +25,6 @@ void ui_write_line(char* line);
 
 void ui_init(char* filename);
 
+void ui_display_waiting_for_server();
+
 #endif

@@ -2,3 +2,9 @@ server.dSYM
 gap_buffer.dSYM
 ui.dSYM
 client.dSYM
+client
+server
+gap_buffer
+*.txt
+ui
+.vscode/settings.json

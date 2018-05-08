@@ -191,6 +191,7 @@ void user_actions(int n) {
     }
 }
 
+// Deprecated (no longer persist files on the client-side)
 void ui_init(char* filename)
 {
     if (filename == NULL) {
@@ -206,6 +207,14 @@ void ui_init(char* filename)
       int input = getch();
       user_actions(input);
     }
+
+    refresh(); // Refresh display
+    endwin();  // End ncurses mode
+}
+
+void ui_init_window() {
+    // Initialize UI window
+    setup_window();
 
     refresh(); // Refresh display
     endwin();  // End ncurses mode
