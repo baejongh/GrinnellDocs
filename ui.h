@@ -9,7 +9,7 @@ void setup_window();
 /**
  * 
  */
-void write_message(char c);
+void ui_append_char(char c);
 
 /**
  * 
@@ -19,7 +19,9 @@ void user_actions(int n);
 /**
  * 
  */
-void write_file_to_ui(char* filename);
+void ui_write_file(char* filename);
+
+void ui_write_line(char* line);
 
 void ui_init(char* filename);
 
