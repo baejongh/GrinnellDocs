@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "types.h"
 
 #include <curses.h>
 #include <stdio.h>
@@ -121,7 +122,7 @@ void user_actions(int n) {
         case 127:
         case KEY_BACKSPACE:
             // The Backspace key
-            if(x == 0)
+            if(x < 0)
             {
                 // do nothing
                 // need to move up the line
@@ -132,7 +133,11 @@ void user_actions(int n) {
                 // Removes a character
                 mvwaddch(mainwin, y, x, ' ');
                 // sets the curser at the correct location
-                x = x - 1;
+                if (x == 0) {
+                    x = 0;
+                } else {
+                    x = x - 1;
+                }
                 move(y,x);
                 wrefresh(mainwin);
 
@@ -147,7 +152,6 @@ void user_actions(int n) {
             else
             {
                 // Removes a character
-                
                 mvwaddch(mainwin, y, x, ' ');
                 x--;
                 move(y,x);
