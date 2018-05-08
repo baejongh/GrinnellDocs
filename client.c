@@ -56,7 +56,7 @@ void server_loop() {
 
   while (fread(reply, sizeof(server_pl_t), 1, server_info.input) > 0) {
     if (reply->msg_type == SERVER_ECHO) {
-      printf("Client sent: %s\n", reply->msg);
+      //printf("Client sent: %s\n", reply->msg);
     }
   }
 
