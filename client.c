@@ -18,6 +18,8 @@
 
 server_info_t server_info;
 bool active = true;
+bool server_sending_file = false;
+bool reply_received = false;
 
 int main(int argc, char** argv) {
   if(argc != 4) {
@@ -55,9 +57,11 @@ void server_loop() {
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
 
   while (fread(reply, sizeof(server_pl_t), 1, server_info.input) > 0) {
+    
     if (reply->msg_type == SERVER_ECHO) {
       //printf("Client sent: %s\n", reply->msg);
     }
+    payload_handler(reply);
   }
 
   free(reply);
@@ -110,13 +114,24 @@ void init_server_streams() {
 }
 
 void* ui_fn(void* p) {
+  ui_init_window();
+
   ui_fn_args_t* args = (ui_fn_args_t*) p;
 
-  ui_init(args->filename);
-
   client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
-  pl->msg_type = CLIENT_PING;
-  strcpy(pl->msg, "hello!\n");
+  pl->msg_type = CLIENT_DOC_REQUEST;
+  // Encode the filename in the message field to send to server
+  strcpy(pl->msg, args->filename);
+
+  // Wait for the server to reply with the file (if it exists)
+  // Otherwise, the server will tell us we opened a new file with
+  // that name
+  // The other thread will read the input from the server, so block
+  // in this thread until we get our response
+  ui_display_waiting_for_server();
+  while (!reply_received) {
+    // Spin
+  }
 
   while (true) {
     // Get some input from the UI to send to the server
@@ -152,4 +167,35 @@ void send_client_write_char_payload(int y_pos, int x_pos, char ch) {
 
   // Free memory for payload
   free(pl);
+}
+
+// Control flow for different message types sent from server
+void payload_handler(server_pl_t* pl) {
+  switch (pl->msg_type) {
+    case SERVER_ECHO:
+      // For debugging purposes.
+      ui_write_line(pl->msg);
+      break;
+    case SERVER_DOC_START:
+      server_sending_file = true;
+      break;
+    case SERVER_DOC_LINE:
+      ui_write_line(pl->msg);
+      break;
+    case SERVER_DOC_END:
+      server_sending_file = false;
+      break;
+    case SERVER_DOC_NOT_FOUND:
+      // We just write to an empty file
+      break;
+    case SERVER_WRITE_CHAR_RELAY:
+      // For now, just add to the end of the file.
+      // Later we can edit the location in the document that
+      // needs to be changed
+      ui_append_char(pl->ch);
+      break;
+    default:
+      perror("Unexpected message type client.c payload_handler");
+      break;
+  }
 }

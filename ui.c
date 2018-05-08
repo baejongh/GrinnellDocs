@@ -50,7 +50,7 @@ void setup_window() {
   refresh();
 }
 
-void write_message(char c) {
+void ui_append_char(char c) {
     send_client_write_char_payload(y, x, c);
     if (c == '\n') {
         y++;
@@ -112,32 +112,31 @@ void enter(int x, int y) {
 
 
 void user_actions(int n) {
-
     switch(n) {
-    case KEY_LEFT:
-        if (x - 1 >= 0) {
-          x--;
-          move(y,x);
-        }
-        return;
-    case KEY_RIGHT:
-        if (x + 1 < WIDTH) {
-          x++;
-          move(y,x);
-        }
-        return;
-    case KEY_UP:
-        if (y - 1 >= 0) {
-          y--;
-          move(y,x);
-        }
-        return;
-    case KEY_DOWN:
-        if (y + 1 < TEXT_HEIGHT) {
-          y++;
-          move(y,x);
-        }
-        return;
+        case KEY_LEFT:
+            if (x - 1 >= 0) {
+            x--;
+            move(y,x);
+            }
+            return;
+        case KEY_RIGHT:
+            if (x + 1 < WIDTH) {
+            x++;
+            move(y,x);
+            }
+            return;
+        case KEY_UP:
+            if (y - 1 >= 0) {
+            y--;
+            move(y,x);
+            }
+            return;
+        case KEY_DOWN:
+            if (y + 1 < TEXT_HEIGHT) {
+            y++;
+            move(y,x);
+            }
+            return;
     }
     switch(mode)
     {
@@ -227,13 +226,13 @@ void user_actions(int n) {
         case KEY_CATAB:
         case 9:
             // The Tab key
-            write_message('\t');
+            ui_append_char('\t');
             x = x + 2;
             move(y,x);
             break;
         default:
             // Any other character
-            write_message((char) n);
+            ui_append_char((char) n);
             move(y,x);
 
             break;
@@ -242,6 +241,7 @@ void user_actions(int n) {
     }
 }
 
+// Deprecated (no longer persist files on the client-side)
 void ui_init(char* filename)
 {
     if (filename == NULL) {
@@ -250,7 +250,7 @@ void ui_init(char* filename)
 
     // Initialize UI window
     setup_window();
-    write_file_to_ui(filename);
+    ui_write_file(filename);
 
     // UI user input loop
     while(1) {
@@ -262,20 +262,33 @@ void ui_init(char* filename)
     endwin();  // End ncurses mode
 }
 
-void write_file_to_ui(char* filename) {
+void ui_init_window() {
+    // Initialize UI window
+    setup_window();
+
+    refresh(); // Refresh display
+    endwin();  // End ncurses mode
+}
+
+void ui_write_file(char* filename) {
     // read in the file
     FILE *file;
     size_t c;
 
     file = fopen(filename, "r");
 
-    while(1) {
+    while(!feof(file) || c != EOF) {
         int c = fgetc(file);
-        if (feof(file) || c == EOF) {
-            break;
-        }
-        write_message(c);
+        ui_append_char(c);
     }
 
     fclose(file);
+}
+
+void ui_write_line(char* line) {
+    uint8_t* char_ptr = (uint8_t*) line;
+    while (char_ptr != NULL) {
+        ui_append_char((int) *char_ptr);
+        char_ptr++;
+    }
 }
