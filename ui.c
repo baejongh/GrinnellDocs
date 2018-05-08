@@ -1,5 +1,5 @@
 #include "ui.h"
-#include "types.h"
+#include "client.h"
 
 #include <curses.h>
 #include <stdio.h>
@@ -48,6 +48,7 @@ void setup_window() {
 }
 
 void write_message(char c) {
+    send_client_write_char_payload(y, x, c);
     if (c == '\n') {
         y++;
         x = 0;
@@ -140,7 +141,6 @@ void user_actions(int n) {
                 }
                 move(y,x);
                 wrefresh(mainwin);
-
             }
             break;
         case KEY_DC:
