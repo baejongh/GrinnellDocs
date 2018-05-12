@@ -406,10 +406,12 @@ void ui_write_file(char* filename) {
 }
 
 void ui_write_line(char* line) {
-    uint8_t* char_ptr = (uint8_t*) line;
-    while (char_ptr != NULL) {
-        ui_append_char_((int) *char_ptr);
+    __uint8_t* char_ptr = (__uint8_t*) line;
+    int counter = 0;
+    while (char_ptr != NULL && counter < MAX_MSG_LEN) {
+        ui_append_char_((char) *char_ptr);
         char_ptr++;
+        counter++;
     }
 }
 

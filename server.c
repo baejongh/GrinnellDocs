@@ -204,7 +204,7 @@ int send_client_doc_lines(server_pl_t* reply, FILE* reply_stream) {
   reply->msg_type = SERVER_DOC_LINE;
 
   size_t counter = 0;
-  char ch;
+  int ch;
   while (!feof(file) || ch != EOF) {
     // Copy contents of file into payload
     ch = fgetc(file);
