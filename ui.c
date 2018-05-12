@@ -49,8 +49,8 @@ void setup_window() {
   refresh();
 }
 
-void ui_append_char(char c) {
-    send_client_write_char_payload(y, x, c);
+// Appends a char to the UI without sending a payload to the server
+void ui_append_char_(char c) {
     if (c == '\n') {
         y++;
         x = 0;
@@ -66,7 +66,12 @@ void ui_append_char(char c) {
             y++;
             x = 0;
         }
-    }
+    }  
+}
+
+void ui_append_char(char c) {
+    send_client_write_char_payload(y, x, c);
+    ui_append_char_(c);
 }
 
 void user_actions(int n) {
@@ -206,14 +211,14 @@ void ui_init(char* filename)
 {
     if (filename == NULL) {
         fprintf(stderr, "A valid filename is required: current filename is: %s", filename);
-    }          
+    }
 
     // Initialize UI window
     setup_window();
     ui_write_file(filename);
 
     // UI user input loop
-    while(1) {
+    while(true) {
       int input = getch();
       user_actions(input);
     }
@@ -225,6 +230,11 @@ void ui_init(char* filename)
 void ui_init_window() {
     // Initialize UI window
     setup_window();
+
+    while(true) {
+      int input = getch();
+      user_actions(input);
+    }
 
     refresh(); // Refresh display
     endwin();  // End ncurses mode
@@ -248,7 +258,11 @@ void ui_write_file(char* filename) {
 void ui_write_line(char* line) {
     uint8_t* char_ptr = (uint8_t*) line;
     while (char_ptr != NULL) {
-        ui_append_char((int) *char_ptr);
+        ui_append_char_((int) *char_ptr);
         char_ptr++;
     }
+}
+
+void ui_display_waiting_for_server() {
+    // STUB
 }

@@ -27,4 +27,6 @@ void ui_init(char* filename);
 
 void ui_display_waiting_for_server();
 
+void ui_init_window();
+
 #endif

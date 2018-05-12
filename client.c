@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  server_loop();
+  server_loop(argv[3]);
 
   // Clean up the UI
   // TODO
@@ -51,8 +51,15 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-void server_loop() {
+void server_loop(char* filename) {
+  // Connect to server
   init_server_streams();
+
+  // Send CLIENT_DOC_REQUEST to open file on server
+  client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
+  pl->msg_type = CLIENT_DOC_REQUEST;
+  strcpy(pl->msg, filename);
+  send_server_payload(pl);
 
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
 
@@ -60,7 +67,7 @@ void server_loop() {
     payload_handler(reply);
   }
 
-  free(reply);
+  free(pl);
 }
 
 // Connects to server
@@ -107,39 +114,11 @@ void init_server_streams() {
 
   server_info.input  = input;
   server_info.output = output;
+
 }
 
 void* ui_fn(void* p) {
   ui_init_window();
-
-  ui_fn_args_t* args = (ui_fn_args_t*) p;
-
-  client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
-  pl->msg_type = CLIENT_DOC_REQUEST;
-  // Encode the filename in the message field to send to server
-  strcpy(pl->msg, args->filename);
-
-  // Wait for the server to reply with the file (if it exists)
-  // Otherwise, the server will tell us we opened a new file with
-  // that name
-  // The other thread will read the input from the server, so block
-  // in this thread until we get our response
-  ui_display_waiting_for_server();
-  while (!reply_received) {
-    // Spin
-  }
-
-  while (true) {
-    // Get some input from the UI to send to the server
-    // Or just general input to handle locally
-    send_server_payload(pl);
-
-    // Sleep for one second and then send hello again
-    sleep(1);
-  }
-
-  free(pl);
-
   return NULL;
 }
 
@@ -179,10 +158,13 @@ void payload_handler(server_pl_t* pl) {
       ui_write_line(pl->msg);
       break;
     case SERVER_DOC_END:
+      // File contents have been sent; proceed as normal
       server_sending_file = false;
       break;
     case SERVER_DOC_NOT_FOUND:
-      // We just write to an empty file
+      // We just write to an empty file 
+      // (proceed without waiting for file contents)
+      server_sending_file = false;
       break;
     case SERVER_WRITE_CHAR_RELAY:
       // For now, just add to the end of the file.
