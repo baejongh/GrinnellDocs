@@ -220,7 +220,7 @@ int send_client_doc_lines(server_pl_t* reply, FILE* reply_stream) {
 
   // Send any remaining characters to the client
   if (counter > 0) {
-    reply->msg[counter] = '\0';
+    reply->msg[--counter] = '\0';
     send_client_payload(reply, reply_stream);
   }
 
