@@ -12,6 +12,7 @@
 #define USERNAME_DISPLAY_MAX 8
 
 char input[100];
+char* file[100];
 
 WINDOW* mainwin;
 WINDOW* textwin;
@@ -74,6 +75,47 @@ void ui_append_char(char c) {
     ui_append_char_(c);
 }
 
+void enter(int x, int y) {
+    // initialize the 2d array
+    for (int i = 0; i < WIDTH; i++) {
+        file[i] = (char*) malloc(WIDTH * sizeof(char));
+    }
+
+    int count = 0;
+    // populate the line we want to enter
+    for (int i = x; i < WIDTH; i++) {
+        file[y][count] = (char) mvwinch(mainwin, y, i);
+        mvwaddch(mainwin, y, i, ' ');
+        count++;
+    }
+
+    for (int i = count; i < WIDTH; i++) {
+        file[y][i] = ' '; //?
+    }
+
+    // grab the rest of the file
+    int height = y+1;
+    while (height < WIDTH) {
+        for (int i = 0; i < WIDTH; i++) {
+            file[height][i] = (char) mvwinch(mainwin, height, i);
+        }
+        height++;
+    }
+
+    for (int i = y; i < WIDTH; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            mvwaddch(mainwin, i+1, j, file[i][j]);
+        }
+    }
+
+    for (int i = 0; i < WIDTH; i++) {
+        free(file[i]);
+    }
+
+    wrefresh(mainwin);
+}
+
+
 void user_actions(int n) {
     switch(n) {
         case KEY_LEFT:
@@ -109,6 +151,7 @@ void user_actions(int n) {
         case 'x':
             // Press 'x' to exit
             mode = 'x';
+            exit(1);
             break;
         case 'i':
             // Press 'i' to enter insert mode
@@ -170,11 +213,8 @@ void user_actions(int n) {
             // Bring the rest of the line down
             if(x < 100)
             {
-                for (int i = x; i < 100; i++) {
-                    char add = (char) mvwinch(mainwin, y, i);
-                   mvwaddch(mainwin, y+1, i, add);
-                   mvwaddch(mainwin, y, i, ' ');
-                }
+                enter(x,y);
+                x = 0;
                 y++;
                 // Put the rest of the line on a new line
                 move(y,x);
