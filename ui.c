@@ -127,7 +127,7 @@ void space(int y, int x) {
     wrefresh(mainwin);
 }
 
-void tab(int x, int y) {
+void tab(int y, int x) {
     char* file[100];
     // initialize the 2d array
     for (int i = 0; i < WIDTH; i++) {
