@@ -112,12 +112,6 @@ void* client_thread_fn(void* p) {
     perror("fdopen failed");
     exit(EXIT_FAILURE);
   }
-
-  // Send echo (debug)
-  server_pl_t* reply = (server_pl_t*) malloc(sizeof(client_pl_t));
-  reply->msg_type = SERVER_ECHO;
-  strcpy(reply->msg, "hey");
-  send_client_payload(reply, output);
   
   // Read lines until we hit the end of the input (the client disconnects)
   char* line = NULL;
@@ -162,7 +156,7 @@ void client_doc_request_handler(client_pl_t* pl, FILE* reply_stream) {
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
 
   send_client_doc_start_reply(reply, reply_stream);
-  int ret = send_client_doc_lines(reply, reply_stream);
+  int ret = send_client_doc_lines(reply, pl->msg, reply_stream);
   if (ret == -1) {
     fprintf(stderr, "Failed to open file with name: %s\n", pl->msg);
   }
@@ -189,9 +183,9 @@ void send_client_doc_end_reply(server_pl_t* reply, FILE* reply_stream) {
 //  on success: 0
 //  on failure: -1eamost@Maribel:~/csc213/GrinnellDocs$ ./server 
 
-int send_client_doc_lines(server_pl_t* reply, FILE* reply_stream) {
+int send_client_doc_lines(server_pl_t* reply, char* filename, FILE* reply_stream) {
   // Open file
-  FILE* file = fopen("alek.txt", "r");
+  FILE* file = fopen(filename, "r");
   if (file == NULL) {
     perror("Failed to open file.\n");
     return -1;
@@ -247,8 +241,7 @@ void client_write_char_handler(client_pl_t* pl, FILE* reply_stream, int this_cli
     pl->ch, pl->x_pos, pl->y_pos);
 
   // open the file to write the user updates to
-  char* filename = "alek.txt";
-  FILE* file = fopen(filename, "r+");
+  FILE* file = fopen(pl->msg, "r+");
 
   server_file_update(file, pl);
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
