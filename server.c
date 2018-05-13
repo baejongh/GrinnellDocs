@@ -14,6 +14,9 @@
 
 #define DEFAULT_PORT 4444
 
+clients_list_t* connected_clients;
+pthread_mutex_t clients_lock;
+
 typedef struct thread_arg {
   int socket_fd;
   int client_number;
@@ -31,9 +34,19 @@ void client_write_char_handler(client_pl_t* pl, FILE* reply_stream);
 void payload_handler(client_pl_t* pl, FILE* reply_stream);
 void compute_offset(FILE* file, int x, int y);
 void server_file_update (FILE* file, client_pl_t* pl);
+void relay_file_update(server_pl_t* reply, FILE* reply_stream);
+
+void add_client(server_info_t* new_client);
+void remove_client(int uid_to_remove);
 
 int main(int argc, char** argv) {
   int port = argc == 2 ? atoi(argv[1]) : DEFAULT_PORT;
+
+  // init the clients list
+  connected_clients = (clients_list_t*) malloc (sizeof(clients_list_t));
+
+  // init locks
+  pthread_mutex_init(&clients_lock, NULL);
 
   // Set up a socket
   int s = socket(AF_INET, SOCK_STREAM, 0);
@@ -78,6 +91,10 @@ int main(int argc, char** argv) {
     inet_ntop(AF_INET, &client_addr.sin_addr, ipstr, INET_ADDRSTRLEN);
     
     printf("Client %d connected from %s\n", client_count, ipstr);
+    server_info_t* new_client = (server_info_t*) malloc(sizeof(server_info_t));
+    new_client->uid = client_count;
+    new_client->socket = client_socket;
+    add_client(new_client);
     
     // Set up arguments for the client thread
     thread_arg_t* args = malloc(sizeof(thread_arg_t));
@@ -114,6 +131,16 @@ void* client_thread_fn(void* p) {
   FILE* input  = fdopen(socket_fd, "r");
   FILE* output = fdopen(socket_fd_copy, "w");
   
+  // update client's input/output streams
+  /*
+  server_info_t* cur_client = connected_clients->head;
+  while (cur_client != NULL) {
+    if (cur_client->uid == client_number) {
+      cur_client->input = input;
+      cur_client->output = output;
+    }
+  }*/
+
   // Check for errors
   if(input == NULL || output == NULL) {
     perror("fdopen failed");
@@ -146,6 +173,9 @@ void* client_thread_fn(void* p) {
   // Print information on the server side
   printf("Client %d disconnected.\n", client_number);
   
+  // TODO: FIX ISSUE!!
+  //remove_client(client_number);
+
   return NULL;
 }
 
@@ -260,6 +290,21 @@ void client_write_char_handler(client_pl_t* pl, FILE* reply_stream) {
   FILE* file = fopen(filename, "r+");
 
   server_file_update(file, pl);
+
+  server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
+  reply->x_pos = pl->x_pos;
+  reply->y_pos = pl->y_pos;
+  reply->ch = pl->ch;
+
+  // loop through the list of connected clients and send them the updated character
+  server_info_t* cur_client = connected_clients->head;
+
+  //while(cur_client != NULL){
+
+    //TODO: Check client's id so it does not send the update back to the same user
+    //relay_file_update(reply, reply_stream);
+  //}
+
 }
 
 void compute_offset(FILE* file, int x, int y) {
@@ -303,4 +348,59 @@ void server_file_update (FILE* file, client_pl_t* pl) {
   char ret = fputc(pl->ch, file);
 
   fclose(file);
+}
+ 
+
+void relay_file_update(server_pl_t* reply, FILE* reply_stream) {
+
+  reply->msg_type = SERVER_WRITE_CHAR_RELAY;
+  send_client_payload(reply, reply_stream);
+  
+}
+
+
+void add_client(server_info_t* new_client) {
+  
+  new_client->next = connected_clients->head;
+
+}
+
+void remove_client(int uid_to_remove) {
+  pthread_mutex_lock(&clients_lock);
+
+  if(connected_clients->head == NULL) {
+    printf("No clients are connected\n");
+  }
+  else {
+    server_info_t* current_client = connected_clients->head;
+    server_info_t* previous_client = NULL;
+    int cur_uid;
+
+    printf("Before the if\n");
+    // if we want to remove the head
+    if (current_client->uid == uid_to_remove) {
+            printf("In the if \n");
+
+      connected_clients->head = current_client->next;
+    }
+    else {
+      printf("In the else\n");
+      // iterate through the list of connected clients
+      while(current_client != NULL) {
+        cur_uid = current_client->uid;
+
+        // if uids match, remove the client
+        if (cur_uid == uid_to_remove) {
+          previous_client->next = current_client->next;
+          break;
+        }
+
+        // advance the pointers
+        current_client = current_client->next;
+        previous_client = current_client;
+      }
+    }
+
+    pthread_mutex_unlock(&clients_lock);
+  }
 }
