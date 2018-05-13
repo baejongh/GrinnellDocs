@@ -20,7 +20,7 @@ char mode;
 int text_heigh;
 int last_char;
 
-
+ 
 char* messages[TEXT_HEIGHT];
 
 void setup_window() {

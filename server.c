@@ -11,51 +11,16 @@
 
 #include "types.h"
 #include "ui.h"
+#include "server.h"
 
 #define DEFAULT_PORT 4444
 
-clients_list_t* connected_clients;
 pthread_mutex_t clients_lock;
-
-typedef struct thread_arg {
-  int socket_fd;
-  int client_number;
-} thread_arg_t;
-
-typedef struct node {
-  FILE* output;
-  int client_id;
-  struct node* next;
-} node_t;
-
-void* client_thread_fn(void* p);
-void client_doc_request_handler(client_pl_t* pl, FILE* reply_stream);
-void send_client_payload(server_pl_t* pl, FILE* reply_stream);
-int  send_client_doc_lines(server_pl_t* reply, FILE* reply_stream);
-void send_client_doc_end_reply(server_pl_t* reply, FILE* reply_stream);
-void send_client_doc_start_reply(server_pl_t* reply, FILE* reply_stream);
-void send_empty_typed_reply(server_pl_t* reply, FILE* reply_stream, int reply_type);
-void client_ping_handler(client_pl_t* pl, FILE* reply_stream);
-void client_write_char_handler(client_pl_t* pl, FILE* reply_stream, int this_client_id);
-void payload_handler(client_pl_t* pl, FILE* reply_stream, int client_id);
-void compute_offset(FILE* file, int x, int y);
-void server_file_update (FILE* file, client_pl_t* pl);
-void relay_file_update(server_pl_t* reply, FILE* reply_stream);
-void add_conn(int client_id, FILE* output);
-void remove_conn(int client_id);
-void broadcast_write_char(server_pl_t* reply, client_pl_t* pl, int this_client_id);
-
-void add_client(server_info_t* new_client);
-void remove_client(int uid_to_remove);
-
 node_t* client_lst = NULL;
 
 int main(int argc, char** argv) {
   int port = argc == 2 ? atoi(argv[1]) : DEFAULT_PORT;
-
-  // init the clients list
-  connected_clients = (clients_list_t*) malloc (sizeof(clients_list_t));
-
+  
   // init locks
   pthread_mutex_init(&clients_lock, NULL);
 
