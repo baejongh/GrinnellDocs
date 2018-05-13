@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 
 #include "types.h"
+#include "ui.h"
 
 #define DEFAULT_PORT 4444
 
@@ -28,6 +29,8 @@ void send_empty_typed_reply(server_pl_t* reply, FILE* reply_stream, int reply_ty
 void client_ping_handler(client_pl_t* pl, FILE* reply_stream);
 void client_write_char_handler(client_pl_t* pl, FILE* reply_stream);
 void payload_handler(client_pl_t* pl, FILE* reply_stream);
+void compute_offset(FILE* file, int x, int y);
+void server_file_update (FILE* file, client_pl_t* pl);
 
 int main(int argc, char** argv) {
   int port = argc == 2 ? atoi(argv[1]) : DEFAULT_PORT;
@@ -251,4 +254,57 @@ void client_write_char_handler(client_pl_t* pl, FILE* reply_stream) {
   // STUB
   printf("Client wants to write: %c at position (x, y): (%d, %d)\n", 
     pl->ch, pl->x_pos, pl->y_pos);
+
+  // open the file to write the user updates to
+  char* filename = "alek.txt";
+  FILE* file = fopen(filename, "r+");
+
+  printf("Before\n");
+  server_file_update(file, pl);
+  printf("After\n");
+}
+
+void compute_offset(FILE* file, int x, int y) {
+
+  size_t ch;
+
+  int cur_x = 0;
+  int cur_y = 0;
+
+  while (!feof(file) || ch != EOF) {
+
+    while (cur_y < y) {
+
+      ch = getc(file);
+      printf("Character = %c\n", ch);
+
+      if (ch == '\n' || cur_x == WIDTH) {
+        cur_y ++;
+        cur_x = 0;
+      }
+      else {
+        cur_x ++;
+      }
+    }
+
+    while (cur_x < x) {
+      printf("Second while loop\n");
+      ch = fgetc(file);
+      cur_x++;
+    }
+  }
+}
+
+void server_file_update (FILE* file, client_pl_t* pl) {
+
+  int x_update = pl->x_pos;
+  int y_update = pl->y_pos;
+
+  compute_offset(file, x_update, y_update);
+  printf("After compute offset\n");
+
+  char ret = fputc(pl->ch, file);
+  printf("Character printed was %c \n", ret);
+
+  fclose(file);
 }
