@@ -6,16 +6,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 char input[100];
 
 WINDOW* mainwin;
 WINDOW* textwin;
-WINDOW* inputwin;
+WINDOW* userwin;
 
 // for the ui x position, y position, and mode
 int x, y;
 char mode;
+int text_heigh;
+int last_char;
+
 
 char* messages[TEXT_HEIGHT];
 
@@ -49,6 +53,7 @@ void setup_window() {
 void ui_append_char_(char c) {
     if (c == '\n') {
         y++;
+        text_heigh++;
         x = 0;
         move(y,x);
     }
@@ -60,6 +65,7 @@ void ui_append_char_(char c) {
         x++;
         if (x > WIDTH) {
             y++;
+            text_heigh++;
             x = 0;
         }
     }  
@@ -219,6 +225,8 @@ void enter(int y, int x) {
         free(file[i]);
     }
 
+    text_heigh++;
+
     wrefresh(mainwin);
 }
 
@@ -232,10 +240,22 @@ void user_actions(int n) {
             }
             return;
         case KEY_RIGHT:
-            if (x + 1 < WIDTH) {
-            x++;
-            move(y,x);
+            for (int i = x + 1; i < TEXT_HEIGHT; i++) {
+                last_char = 0;
+                if ((char) mvwinch(mainwin, y, i) == ' ') {
+                    last_char = 1;
+                }
+                else {
+                    last_char = 0;
+                }
             }
+            if (last_char == 1) {
+                if (x < TEXT_HEIGHT) {
+                    x++;
+                    move(y,x);
+                }
+            }
+            
             return;
         case KEY_UP:
             if (y - 1 >= 0) {
@@ -244,9 +264,12 @@ void user_actions(int n) {
             }
             return;
         case KEY_DOWN:
-            if (y + 1 < TEXT_HEIGHT) {
-            y++;
-            move(y,x);
+            if (y < text_heigh) {
+                if (y + 1 < TEXT_HEIGHT) {
+                    y++;
+                    move(y,x);
+                }
+            return;
             }
             return;
     }
@@ -343,12 +366,7 @@ void user_actions(int n) {
             break;
         default:
             // Any other character
-            if ((char) n == ' ') {
-                space(y,x);
-            }
-            else {
-                ui_append_char((char) n);
-            }
+            ui_append_char((char) n);
             move(y,x);
 
             break;
