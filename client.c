@@ -16,6 +16,8 @@
 #include "ui.h"
 #include "client.h"
 
+#define WAIT_BETWEEN_TRIES 1
+
 server_info_t server_info;
 bool active = true;
 bool server_sending_file = false;
@@ -56,21 +58,26 @@ void server_loop(char* filename) {
   init_server_streams();
 
   // Send CLIENT_DOC_REQUEST to open file on server
-  client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
-  pl->msg_type = CLIENT_DOC_REQUEST;
-  strcpy(pl->msg, filename);
-  send_server_payload(pl);
+  client_send_doc_request(filename);
 
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
 
   while (fread(reply, sizeof(server_pl_t), 1, server_info.input) > 0) {
-    
-    if (reply->msg_type == SERVER_ECHO) {
-      //printf("Client sent: %s\n", reply->msg);
-    }
     payload_handler(reply);
+
+    if (!reply_received) {
+      sleep(WAIT_BETWEEN_TRIES);
+      client_send_doc_request(filename);
+    }
   }
 
+}
+
+void client_send_doc_request(char* filename) {
+  client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
+  pl->msg_type = CLIENT_DOC_REQUEST;
+  strcpy(pl->msg, filename);
+  send_server_payload(pl);
   free(pl);
 }
 
@@ -156,6 +163,7 @@ void payload_handler(server_pl_t* pl) {
       ui_write_line(pl->msg);
       break;
     case SERVER_DOC_START:
+      reply_received = true;
       server_sending_file = true;
       break;
     case SERVER_DOC_LINE:
