@@ -19,6 +19,12 @@ typedef struct thread_arg {
   int client_number;
 } thread_arg_t;
 
+typedef struct node {
+  FILE* output;
+  int client_id;
+  struct node* next;
+} node_t;
+
 void* client_thread_fn(void* p);
 void client_doc_request_handler(client_pl_t* pl, FILE* reply_stream);
 void send_client_payload(server_pl_t* pl, FILE* reply_stream);
@@ -31,6 +37,8 @@ void client_write_char_handler(client_pl_t* pl, FILE* reply_stream);
 void payload_handler(client_pl_t* pl, FILE* reply_stream);
 void compute_offset(FILE* file, int x, int y);
 void server_file_update (FILE* file, client_pl_t* pl);
+
+node_t* client_lst = NULL;
 
 int main(int argc, char** argv) {
   int port = argc == 2 ? atoi(argv[1]) : DEFAULT_PORT;
@@ -113,6 +121,7 @@ void* client_thread_fn(void* p) {
   // Open the socket as a FILE stream so we can use fgets
   FILE* input  = fdopen(socket_fd, "r");
   FILE* output = fdopen(socket_fd_copy, "w");
+  add_conn(client_number, output);
   
   // Check for errors
   if(input == NULL || output == NULL) {
@@ -124,19 +133,9 @@ void* client_thread_fn(void* p) {
   char* line = NULL;
   size_t linecap = 0;
   client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
-  // server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
-  // reply->msg_type = SERVER_ECHO;
   
   while(fread(pl, sizeof(client_pl_t), 1, input)) {
     payload_handler(pl, output);
-
-    // Print a message on the server
-    // 
-    
-    // // Send the message to the client. Flush the buffer so the message is actually sent.
-    // fwrite(reply, sizeof(server_pl_t), 1, output);
-    // strcpy(reply->msg, pl->msg);
-    // fflush(output);
   }
   
   // When we're done, we should free the line from getline
@@ -145,6 +144,7 @@ void* client_thread_fn(void* p) {
   
   // Print information on the server side
   printf("Client %d disconnected.\n", client_number);
+  remove_conn(client_number);
   
   return NULL;
 }
@@ -260,6 +260,9 @@ void client_write_char_handler(client_pl_t* pl, FILE* reply_stream) {
   FILE* file = fopen(filename, "r+");
 
   server_file_update(file, pl);
+  broadcast_write_char(pl);
+
+  fclose(file);
 }
 
 void compute_offset(FILE* file, int x, int y) {
@@ -301,6 +304,50 @@ void server_file_update (FILE* file, client_pl_t* pl) {
   compute_offset(file, x_update, y_update);
 
   char ret = fputc(pl->ch, file);
+}
 
-  fclose(file);
+void add_conn(int client_id, FILE* output) {
+  node_t* n = (node_t*) malloc(sizeof(node_t));
+  n->client_id = client_id;
+  n->output = output;
+  n->next = NULL;
+
+  if (client_lst == NULL) {
+    client_lst = n;
+  } else {
+    node_t* cur = client_lst;
+    while (cur->next != NULL) {
+      cur = cur->next;
+    }
+    cur->next = n;
+  }
+}
+
+void remove_conn(int client_id) {
+  if (client_lst == NULL) {
+    perror("Tried to remove client from client list with empty list");
+    return;
+  }
+
+  node_t* fst = client_lst;
+  if (fst->client_id == client_id) {
+    client_lst = fst->next;
+    free(fst);
+    return;
+  }
+
+  node_t* prev = fst;
+  node_t* cur  = fst->next;
+  while (cur != client_id) {
+    prev = prev->next;
+    cur = cur->next;
+  }
+
+  prev->next = cur->next;
+  free(cur);
+  return;
+}
+
+void broadcast_write_char(client_pl_t* pl, int this_client_id) {
+
 }
