@@ -58,7 +58,27 @@ typedef struct server_info {
   int port;
   FILE* input;
   FILE* output;
+  int uid;
+  struct server_info* next;
 } server_info_t;
+
+
+typedef struct clients_list {
+  server_info_t* head;
+} clients_list_t;
+
+
+/*
+typedef struct client {
+  int socket;
+  int uid;
+  struct client* next;
+} client_t;
+
+typedef struct clients_list{
+  client_t* head;
+} clients_list_t;
+*/
 
 typedef struct client_pl {
   char msg[MAX_MSG_LEN];

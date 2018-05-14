@@ -65,6 +65,11 @@ void ui_append_char_(char c) {
     }  
 }
 
+void ui_place_char(char c, int x, int y) {
+    mvwaddch(mainwin, y, x, c);
+    wrefresh(mainwin);
+}
+
 void ui_append_char(char c) {
     send_client_write_char_payload(y, x, c);
     ui_append_char_(c);

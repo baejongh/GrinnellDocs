@@ -15,6 +15,10 @@ void setup_window();
  */
 void ui_append_char(char c);
 
+void ui_append_char_(char c);
+
+void ui_place_char(char c, int x, int y);
+
 /**
  * 
  */

@@ -174,7 +174,7 @@ void payload_handler(server_pl_t* pl) {
       // For now, just add to the end of the file.
       // Later we can edit the location in the document that
       // needs to be changed
-      ui_append_char(pl->ch);
+      ui_place_char(pl->ch, pl->x_pos, pl->y_pos);
       break;
     default:
       perror("Unexpected message type client.c payload_handler");
