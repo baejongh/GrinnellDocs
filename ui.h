@@ -1,6 +1,10 @@
 #ifndef UI_H
 #define UI_H
 
+#define WIDTH 100
+#define TEXT_HEIGHT 100
+#define USERNAME_DISPLAY_MAX 8
+
 /**
  * Initialize the chat user interface. Call this once at startup.
  */
@@ -10,6 +14,10 @@ void setup_window();
  * 
  */
 void ui_append_char(char c);
+
+void ui_append_char_(char c);
+
+void ui_place_char(char c, int x, int y);
 
 /**
  * 

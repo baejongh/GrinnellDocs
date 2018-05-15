@@ -16,10 +16,13 @@
 #include "ui.h"
 #include "client.h"
 
+#define WAIT_BETWEEN_TRIES 1
+
 server_info_t server_info;
 bool active = true;
 bool server_sending_file = false;
 bool reply_received = false;
+char filename[MAX_FILENAME_LEN];
 
 int main(int argc, char** argv) {
   if(argc != 4) {
@@ -36,6 +39,7 @@ int main(int argc, char** argv) {
   ui_fn_args_t* ui_args = (ui_fn_args_t*) malloc(sizeof(ui_fn_args_t));
 
   strcpy(ui_args->filename, argv[3]);
+  strcpy(filename, argv[3]);
 
   pthread_t ui_thread;
   if (pthread_create(&ui_thread, NULL, ui_fn, ui_args)) {
@@ -56,21 +60,26 @@ void server_loop(char* filename) {
   init_server_streams();
 
   // Send CLIENT_DOC_REQUEST to open file on server
-  client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
-  pl->msg_type = CLIENT_DOC_REQUEST;
-  strcpy(pl->msg, filename);
-  send_server_payload(pl);
+  client_send_doc_request(filename);
 
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
 
   while (fread(reply, sizeof(server_pl_t), 1, server_info.input) > 0) {
-    
-    if (reply->msg_type == SERVER_ECHO) {
-      //printf("Client sent: %s\n", reply->msg);
-    }
     payload_handler(reply);
+
+    if (!reply_received) {
+      sleep(WAIT_BETWEEN_TRIES);
+      client_send_doc_request(filename);
+    }
   }
 
+}
+
+void client_send_doc_request(char* filename) {
+  client_pl_t* pl = (client_pl_t*) malloc(sizeof(client_pl_t));
+  pl->msg_type = CLIENT_DOC_REQUEST;
+  strcpy(pl->msg, filename);
+  send_server_payload(pl);
   free(pl);
 }
 
@@ -140,6 +149,7 @@ void send_client_write_char_payload(int y_pos, int x_pos, char ch) {
   pl->x_pos = x_pos;
   pl->y_pos = y_pos;
   pl->ch = ch;
+  strcpy(pl->msg, filename);
 
   // Send payload to server
   send_server_payload(pl);
@@ -156,6 +166,7 @@ void payload_handler(server_pl_t* pl) {
       ui_write_line(pl->msg);
       break;
     case SERVER_DOC_START:
+      reply_received = true;
       server_sending_file = true;
       break;
     case SERVER_DOC_LINE:
@@ -174,7 +185,7 @@ void payload_handler(server_pl_t* pl) {
       // For now, just add to the end of the file.
       // Later we can edit the location in the document that
       // needs to be changed
-      ui_append_char(pl->ch);
+      ui_place_char(pl->ch, pl->x_pos, pl->y_pos);
       break;
     default:
       perror("Unexpected message type client.c payload_handler");
