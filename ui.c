@@ -22,8 +22,7 @@ int x, y;
 char mode;
 int text_heigh = 4;
 int last_char;
-
-
+ 
 char* messages[TEXT_HEIGHT];
 
 void setup_window() {
@@ -101,6 +100,7 @@ void space(int y, int x) {
 
     // grab the file
     int height = y;
+    setup_window();
     while (height < WIDTH) {
         // for the first line
         if (height == y) {

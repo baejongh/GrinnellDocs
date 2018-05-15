@@ -9,7 +9,7 @@ clean:
 	rm -f gap_buffer
 	rm -f ui
 
-server: server.c
+server: server.c server.h
 	$(CC) $(CFLAGS) -o server server.c -lpthread
 
 client: client.c ui.h ui.c client.h
