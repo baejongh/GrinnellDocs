@@ -22,6 +22,7 @@ server_info_t server_info;
 bool active = true;
 bool server_sending_file = false;
 bool reply_received = false;
+char filename[MAX_FILENAME_LEN];
 
 int main(int argc, char** argv) {
   if(argc != 4) {
@@ -38,6 +39,7 @@ int main(int argc, char** argv) {
   ui_fn_args_t* ui_args = (ui_fn_args_t*) malloc(sizeof(ui_fn_args_t));
 
   strcpy(ui_args->filename, argv[3]);
+  strcpy(filename, argv[3]);
 
   pthread_t ui_thread;
   if (pthread_create(&ui_thread, NULL, ui_fn, ui_args)) {
@@ -147,6 +149,7 @@ void send_client_write_char_payload(int y_pos, int x_pos, char ch) {
   pl->x_pos = x_pos;
   pl->y_pos = y_pos;
   pl->ch = ch;
+  strcpy(pl->msg, filename);
 
   // Send payload to server
   send_server_payload(pl);

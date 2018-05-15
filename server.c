@@ -181,8 +181,7 @@ void send_client_doc_end_reply(server_pl_t* reply, FILE* reply_stream) {
 
 // returns:
 //  on success: 0
-//  on failure: -1eamost@Maribel:~/csc213/GrinnellDocs$ ./server 
-
+//  on failure: -1
 int send_client_doc_lines(server_pl_t* reply, char* filename, FILE* reply_stream) {
   // Open file
   FILE* file = fopen(filename, "r");
@@ -241,6 +240,7 @@ void client_write_char_handler(client_pl_t* pl, FILE* reply_stream, int this_cli
     pl->ch, pl->x_pos, pl->y_pos);
 
   // open the file to write the user updates to
+  printf("pl->msg: %s\n", pl->msg);
   FILE* file = fopen(pl->msg, "r+");
 
   server_file_update(file, pl);

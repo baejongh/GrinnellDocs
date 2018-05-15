@@ -15,6 +15,7 @@
 #include <pthread.h>
 
 #define MAX_MSG_LEN 256
+#define MAX_FILENAME_LEN 32
 
 // Message types between server and client
 

@@ -19,7 +19,6 @@ int x, y;
 char mode;
 int text_heigh;
 int last_char;
-
  
 char* messages[TEXT_HEIGHT];
 
@@ -90,6 +89,7 @@ void space(int y, int x) {
 
     // grab the file
     int height = y;
+    setup_window();
     while (height < WIDTH) {
         // for the first line
         if (height == y) {
@@ -385,6 +385,7 @@ void ui_init(char* filename)
     // Initialize UI window
     setup_window();
     ui_write_file(filename);
+    
 
     // UI user input loop
     while(true) {
