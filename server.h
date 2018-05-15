@@ -26,7 +26,7 @@ typedef struct node {
 void* client_thread_fn(void* p);
 void client_doc_request_handler(client_pl_t* pl, FILE* reply_stream);
 void send_client_payload(server_pl_t* pl, FILE* reply_stream);
-int  send_client_doc_lines(server_pl_t* reply, char* filename, FILE* reply_stream);
+void send_client_doc_lines(server_pl_t* reply, char* filename, FILE* reply_stream);
 void send_client_doc_end_reply(server_pl_t* reply, FILE* reply_stream);
 void send_client_doc_start_reply(server_pl_t* reply, FILE* reply_stream);
 void send_empty_typed_reply(server_pl_t* reply, FILE* reply_stream, int reply_type);
