@@ -91,6 +91,7 @@ typedef struct client_pl {
 typedef struct server_pl {
   char msg[MAX_MSG_LEN]; 
   int msg_type;
+  int num_clients;
   int x_pos;
   int y_pos;
   char ch;

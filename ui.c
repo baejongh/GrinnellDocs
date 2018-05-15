@@ -14,10 +14,13 @@ WINDOW* mainwin;
 WINDOW* textwin;
 WINDOW* userwin;
 
+#define MAIN_HEIGHT 120
+#define USER_HEIGHT 2
+
 // for the ui x position, y position, and mode
 int x, y;
 char mode;
-int text_heigh;
+int text_heigh = 4;
 int last_char;
 
 
@@ -34,7 +37,7 @@ void setup_window() {
   // initialize mode, x, y
   mode = 'n';
   x = 0;
-  y = 0;
+  y = 4;
 
   // Don't display characters when they're pressed
   noecho();
@@ -46,6 +49,14 @@ void setup_window() {
   // get keys like backspace, delete and four arrow keys by getch()
   keypad(stdscr,TRUE);
 
+  // create the mainwindow
+  // textwin = subwin(mainwin, TEXT_HEIGHT + 2, TEXT_HEIGHT + 2, 0, 0);
+  // box(textwin, 0, 0);
+
+  // create the user window
+  userwin = subwin(mainwin, USER_HEIGHT + 2, TEXT_HEIGHT + 2, 0, 0);
+  box(userwin, 0, 0);
+  touchwin(userwin);
   refresh();
 }
 
@@ -258,9 +269,11 @@ void user_actions(int n) {
             
             return;
         case KEY_UP:
-            if (y - 1 >= 0) {
-            y--;
-            move(y,x);
+            if (y > 4) {
+                if (y - 1 >= 0) {
+                    y--;
+                    move(y,x);
+                }
             }
             return;
         case KEY_DOWN:
@@ -281,6 +294,11 @@ void user_actions(int n) {
         case 'x':
             // Press 'x' to exit
             mode = 'x';
+            // cleaning the ui
+            delwin(mainwin);
+            delwin(userwin);
+            endwin();
+            refresh();
             exit(1);
             break;
         case 'i':
@@ -368,7 +386,6 @@ void user_actions(int n) {
             // Any other character
             ui_append_char((char) n);
             move(y,x);
-
             break;
         }
         break;
@@ -385,6 +402,7 @@ void ui_init(char* filename)
     // Initialize UI window
     setup_window();
     ui_write_file(filename);
+
 
     // UI user input loop
     while(true) {
@@ -410,6 +428,10 @@ void ui_init_window() {
 }
 
 void ui_write_file(char* filename) {
+    mvwaddch(userwin, 1, 1, 'V');
+    mvwaddstr(userwin, 1, 1, "FILENAME: ");
+    mvwaddstr(userwin, 1, 10, filename);
+    wrefresh(userwin);
     // read in the file
     FILE *file;
     size_t c;
