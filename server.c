@@ -156,11 +156,7 @@ void client_doc_request_handler(client_pl_t* pl, FILE* reply_stream) {
   server_pl_t* reply = (server_pl_t*) malloc(sizeof(server_pl_t));
 
   send_client_doc_start_reply(reply, reply_stream);
-  int ret = send_client_doc_lines(reply, pl->msg, reply_stream);
-  if (ret == -1) {
-    fprintf(stderr, "Failed to open file with name: %s\n", pl->msg);
-  }
-
+  send_client_doc_lines(reply, pl->msg, reply_stream);
   send_client_doc_end_reply(reply, reply_stream);
 
   free(reply);
@@ -179,15 +175,22 @@ void send_client_doc_end_reply(server_pl_t* reply, FILE* reply_stream) {
   send_empty_typed_reply(reply, reply_stream, SERVER_DOC_END);
 }
 
+void send_client_doc_not_found_reply(server_pl_t* reply, FILE* reply_stream) {
+  send_empty_typed_reply(reply, reply_stream, SERVER_DOC_NOT_FOUND);
+}
+
 // returns:
 //  on success: 0
 //  on failure: -1
-int send_client_doc_lines(server_pl_t* reply, char* filename, FILE* reply_stream) {
+void send_client_doc_lines(server_pl_t* reply, char* filename, FILE* reply_stream) {
   // Open file
   FILE* file = fopen(filename, "r");
   if (file == NULL) {
-    perror("Failed to open file.\n");
-    return -1;
+    printf("Creating file: %s\n", filename);
+    file = fopen(filename, "ab+");
+    send_client_doc_not_found_reply(reply, reply_stream);
+    fclose(file);
+    return;
   }
 
   reply->msg_type = SERVER_DOC_LINE;
@@ -214,8 +217,6 @@ int send_client_doc_lines(server_pl_t* reply, char* filename, FILE* reply_stream
   }
 
   fclose(file);
-
-  return 0;
 }
 
 // pl: the payload to send to the client
