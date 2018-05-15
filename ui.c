@@ -59,10 +59,9 @@ void ui_append_char_(char c) {
     else {
         // display message
         mvwaddch(mainwin, y, x, c);
-        wrefresh(mainwin);
         // increment x and y
         x++;
-        if (x > WIDTH) {
+        if (x == WIDTH) {
             y++;
             text_heigh++;
             x = 0;
@@ -105,23 +104,23 @@ void space(int y, int x) {
         height++;
     }
 
-    // write the tab
+    // write space
     ui_append_char(' ');
 
-    // default tabs are 2 spaces
     // populate rest of the ui
-    x = x + 1;
+    int hold = x;
+    int y_hold = y;
     height = y;
     while (height < WIDTH) {
         // for the first line
         if (height == y) {
-            for (int i = x; i < WIDTH; i++) {
-                ui_append_char(file[height][i]);
+            for (int i = hold; i < WIDTH; i++) {
+                ui_append_char_(file[height][i]);
             }
         }
         else {
             for (int i = 0; i < WIDTH; i++) {
-                ui_append_char(file[height][i]);
+                ui_append_char_(file[height][i]);
             }
         }
         height++;
@@ -131,60 +130,8 @@ void space(int y, int x) {
         free(file[i]);
     }
 
-    wrefresh(mainwin);
-}
-
-void tab(int y, int x) {
-    char* file[100];
-    // initialize the 2d array
-    for (int i = 0; i < WIDTH; i++) {
-        file[i] = (char*) malloc(WIDTH * sizeof(char));
-    }
-
-    // grab the file
-    int height = y;
-    while (height < WIDTH) {
-        // for the first line
-        if (height == y) {
-            for (int i = x; i < WIDTH; i++) {
-                file[height][i] = (char) mvwinch(mainwin, height, i);
-            }
-        }
-        else {
-            for (int i = 0; i < WIDTH; i++) {
-                file[height][i] = (char) mvwinch(mainwin, height, i);
-            }
-        }
-        height++;
-    }
-
-    // write the tab
-    ui_append_char('\t');
-
-    // default tabs are 2 spaces
-    // populate rest of the ui
-    x = x + 2;
-    height = y;
-    while (height < WIDTH) {
-        // for the first line
-        if (height == y) {
-            for (int i = x; i < WIDTH; i++) {
-                ui_append_char(file[height][i]);
-            }
-        }
-        else {
-            for (int i = 0; i < WIDTH; i++) {
-                ui_append_char(file[height][i]);
-            }
-        }
-        height++;
-    }
-
-    for (int i = 0; i < WIDTH; i++) {
-        free(file[i]);
-    }
-
-    wrefresh(mainwin);
+    x = hold;
+    y = y_hold;
 }
 
 void enter(int y, int x) {
@@ -360,14 +307,16 @@ void user_actions(int n) {
         case KEY_STAB:
         case KEY_CATAB:
         case 9:
-            // The Tab key
-            tab(y,x);
+            // The Tab key default is 2 space
+            ui_append_char((char) '\t');
+            x = x + 2;
             move(y,x);
             break;
         default:
             // Any other character
             ui_append_char((char) n);
             move(y,x);
+            wrefresh(mainwin);
 
             break;
         }
