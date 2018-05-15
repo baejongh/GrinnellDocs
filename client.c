@@ -131,7 +131,7 @@ void init_server_streams() {
 }
 
 void* ui_fn(void* p) {
-  ui_init_window();
+  ui_init_window(p);
   return NULL;
 }
 

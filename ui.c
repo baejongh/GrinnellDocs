@@ -392,12 +392,12 @@ void user_actions(int n) {
     }
 }
 
-void ui_init_window() {
+void ui_init_window(void *p) {
     // Initialize UI window
     setup_window();
-
+    ui_fn_args_t* ui_args = p;
     mvwaddstr(userwin, 1, 1, "FILENAME: ");
-    mvwaddstr(userwin, 1, 11, "alek.txt");
+    mvwaddstr(userwin, 1, 11, ui_args->filename);
     wrefresh(userwin);
 
     while(true) {
