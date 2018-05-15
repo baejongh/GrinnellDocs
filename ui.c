@@ -392,31 +392,13 @@ void user_actions(int n) {
     }
 }
 
-// Deprecated (no longer persist files on the client-side)
-void ui_init(char* filename)
-{
-    if (filename == NULL) {
-        fprintf(stderr, "A valid filename is required: current filename is: %s", filename);
-    }
-
-    // Initialize UI window
-    setup_window();
-    ui_write_file(filename);
-
-
-    // UI user input loop
-    while(true) {
-      int input = getch();
-      user_actions(input);
-    }
-
-    refresh(); // Refresh display
-    endwin();  // End ncurses mode
-}
-
 void ui_init_window() {
     // Initialize UI window
     setup_window();
+
+    mvwaddstr(userwin, 1, 1, "FILENAME: ");
+    mvwaddstr(userwin, 1, 11, "alek.txt");
+    wrefresh(userwin);
 
     while(true) {
       int input = getch();
@@ -428,10 +410,7 @@ void ui_init_window() {
 }
 
 void ui_write_file(char* filename) {
-    mvwaddch(userwin, 1, 1, 'V');
-    mvwaddstr(userwin, 1, 1, "FILENAME: ");
-    mvwaddstr(userwin, 1, 10, filename);
-    wrefresh(userwin);
+
     // read in the file
     FILE *file;
     size_t c;
